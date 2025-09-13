@@ -4,12 +4,13 @@ from PIL import Image
 import os
 from datetime import datetime
 from io import BytesIO
+from dotenv import load_dotenv
 
-# need to add to secret / gitignore but for testing right now let's use
+load_dotenv()
 
-CLIENT_ID = 'rWtcfEUDSAcqQ3_TSfuCwQ'
-CLIENT_SECRET = 'ronUz5OA2pk0B9JtUWsrUCavXT3HSA'
-USER_AGENT = 'redditdev meme downloader by u/SetInteresting6212'
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+USER_AGENT = os.getenv('USER_AGENT')
 
 # Authenticate to Reddit's API and create a Reddit instance
 reddit = praw.Reddit(client_id=CLIENT_ID,
@@ -43,13 +44,16 @@ def download_memes(meme_urls):
 
     for i, url in enumerate(meme_urls):
         response = requests.get(url)
-        if response.status_code == 200 and (url.endswith('.jpg') or url.endswith('.png') or url.endswith('.gif') or url.endswith('.bmp') or url.endswith('.tiff') or url.endswith('.webp')):
+        if response.status_code == 200 and (url.endswith('.jpg') or url.endswith('.jpeg') or url.endswith('.png') or url.endswith('.gif') or url.endswith('.bmp') or url.endswith('.tiff') or url.endswith('.webp')):
             image = Image.open(BytesIO(response.content))
             # Convert the image to RGB mode if necessary
             if image.mode != 'RGB':
                 image = image.convert('RGB')
             image.save(f'{folder_name}/meme_{i+1}.jpg')
             print(f'Meme saved at: {folder_name}/meme_{i+1}.jpg')
+        else:
+            print(
+                f'Failed to download image from {url} with status code {response.status_code} andcontent type {response.headers.get("Content-Type")}')
 
 
 if __name__ == "__main__":
